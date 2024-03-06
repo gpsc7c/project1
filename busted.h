@@ -22,7 +22,14 @@ void printErr(int err, int row, int column){
 }
 Ttoken tokenSetter(int tkID, char* tkStr, int tkRow, int tkCol){
 	Ttoken token;
+	//int i;
 	token.tokenID = tkID;
+	/*for(i = 0; i < MAX_LENGTH && i < strlen(tkStr); i++){
+		token.tokenInstance[i] = tkStr[i];
+	}
+	for(; i <= MAX_LENGTH; i++){
+		token.tokenInstance[i] = '\0';
+	}*/
 	token.tokenInstance = tkStr;
 	token.row = tkRow;
 	token.column = tkCol;
@@ -77,19 +84,13 @@ Ttoken *filter(FILE* fName, char* c, int* row, int* col){
 		*col = *col + 1;
 	}
 	while (c[0] != EOF) {
+		if(isspace(c[0])){
+			while(c[0] != EOF && c[0] != '\n'){
+				c[0] = fgetc(fName);
+			}
+		}
 		if(!isspace(c[0])){
 			*token = FSADriver(fName, c, *row, col);
-		}
-		if(c[0] == '\n'){
-			if(*row == INT_MAX){
-				fprintf(stderr, "ERROR: scanner.h: Filter: File too long (row count)");
-				exit(-1);
-			}
-			*row = *row + 1;
-			*col = 1;
-		}
-		if(isspace(c[0])){
-			c[0] = fgetc(fName);
 		}
 		//skip to end of line if a comment
 		if(token->tokenID == -1){
@@ -98,12 +99,20 @@ Ttoken *filter(FILE* fName, char* c, int* row, int* col){
 			}
 		}
 		//increment row if end of line reached
+		if(c[0] == '\n'){
+			if(*row == INT_MAX){
+				fprintf(stderr, "ERROR: scanner.h: Filter: File too long (row count)");
+				exit(-1);
+			}
+			*row = *row + 1;
+			*col = 0;
+		}
 		if(token->tokenID >= 0){
 			return token;
 		}
 		else{
 			return NULL;
-		}		
+		}
 	}
 	return NULL;
 }
@@ -116,9 +125,10 @@ void testScanner(FILE* fName){
 	char c[2] = {'\0','\0'};				//iterator
 	while((token = filter(fName, c, row, col))&& token->tokenID != EOFTK){
 		if(token != NULL){
-			fprintf(stdout,"%s,   %s,   row %d,  character %d.\n",tokenNames[token->tokenID],token->tokenInstance,token->row,token->column);
+			fprintf(stdout,"\n%s,   %s,   row %d,  character %d.",tokenNames[token->tokenID],token->tokenInstance,token->row,token->column);
 		}
 	}
+	1+2;
 }
 
 #endif

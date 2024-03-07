@@ -23,7 +23,15 @@ void printErr(int err, int row, int column){
 Ttoken tokenSetter(int tkID, char* tkStr, int tkRow, int tkCol){
 	Ttoken token;
 	token.tokenID = tkID;
-	token.tokenInstance = tkStr;
+/*	char insert[MAX_LENGTH + 1] =  {'\0','\0','\0','\0','\0','\0','\0','\0','\0'};
+*/	int i;
+	for(i = 0; i < strlen(tkStr); i++){
+		token.tokenInstance[i] = tkStr[i];
+	}
+	for(; i < MAX_LENGTH + 1; i++){
+		token.tokenInstance[i] = '\0';
+	}
+	//token.tokenInstance = tkStr;
 	token.row = tkRow;
 	token.column = tkCol;
 	return token;
@@ -68,9 +76,10 @@ Ttoken FSADriver(FILE* fName, char* nextChar, int row, int* col){//Arg exists fo
 	return tokenSetter(-2, NULL, -1, -1);	
 }
 //row and column should start at 0
-Ttoken *filter(FILE* fName, char* c, int* row, int* col){
+Ttoken filter(FILE* fName, char* c, int* row, int* col){
 	Ttoken* token = malloc(sizeof(Ttoken));
-	token->tokenInstance= malloc(sizeof(char)*MAX_LENGTH+1);
+	//char tokString[9] = {'\0','\0','\0','\0','\0','\0','\0','\0','\0'}/*= malloc(sizeof(char)*(MAX_LENGTH+1))*/;
+	//token->tokenInstance= malloc(sizeof(char)*MAX_LENGTH+1);
 	token->tokenID = -3;
 	if(*row == 1 && *col == 0){
 		c[0] = fgetc(fName);
@@ -99,26 +108,30 @@ Ttoken *filter(FILE* fName, char* c, int* row, int* col){
 		}
 		//increment row if end of line reached
 		if(token->tokenID >= 0){
-			return token;
+			return tokenSetter(token->tokenID, token->tokenInstance, token->row, token->column);
 		}
 		else{
-			return NULL;
+			return tokenSetter(-2, NULL, -1, -1);	
 		}		
 	}
-	return NULL;
+	return tokenSetter(-2, NULL, -1, -1);	
 }
 void testScanner(FILE* fName){
 	int *col = malloc(sizeof(int));
 	int *row = malloc(sizeof(int));
-	Ttoken *token;
+	Ttoken *token = malloc(sizeof(Ttoken));
+	//token->tokenInstance= malloc(sizeof(char)*MAX_LENGTH+1);
 	*col = 0;
 	*row = 1;
 	char c[2] = {'\0','\0'};				//iterator
-	while((token = filter(fName, c, row, col))&& token->tokenID != EOFTK){
-		if(token != NULL){
-			fprintf(stdout,"%s,   %s,   row %d,  character %d.\n",tokenNames[token->tokenID],token->tokenInstance,token->row,token->column);
+	while(c[0] != EOF && token->tokenID != EOFTK){
+		*token = filter(fName, c, row, col);
+		if(token->tokenID >= 0 ){
+			fprintf(stdout, "%s,   %s,   row %d,  character %d.\n",tokenNames[token->tokenID], token->tokenInstance, token->row,token->column);
 		}
 	}
+	/*if(token->tokenID == EOFTK){
+		fprintf(stdout,"%s,   %s,   row %d,  character %d.\n",tokenNames[token->tokenID],token->tokenInstance,token->row,token->column);
+	}*/
 }
-
 #endif

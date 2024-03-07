@@ -5,7 +5,7 @@ char* tokenNames[43] = {"IDTK", "INTTK", "ASSIGNTK", "GREATTK", "LESSTK", "ISEQU
 
 typedef struct {
 	int tokenID;
-	char* tokenInstance;//This is the actual token, not the Token ID, yes?
+	char tokenInstance[9];//This is the actual token, not the Token ID, yes?
 	int row;
 	int column;	
 }Ttoken;

@@ -60,7 +60,7 @@ int tokFinder(int state){
 	if(state == s5){
 		return ISEQUALTK;
 	}
-	if(state == s6){
+	if(state == s29){
 		return NOTEQUALTK;
 	}
 	if(state == s7){

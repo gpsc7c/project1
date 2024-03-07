@@ -49,7 +49,7 @@ Ttoken FSADriver(FILE* fName, char* nextChar, int row, int* col){//Arg exists fo
 			exit(-1);
 		}
 		if(nextState == s30){	
-			return(tokenSetter(-1, NULL, row, column));
+			return(tokenSetter(-1, "n/a", row, column));
 		}
 		if(strlen(tokString) > 7){
 			nextState = FINAL;
@@ -73,7 +73,7 @@ Ttoken FSADriver(FILE* fName, char* nextChar, int row, int* col){//Arg exists fo
 			*col = *col + 1;
 		}
 	}
-	return tokenSetter(-2, NULL, -1, -1);	
+	return tokenSetter(-2, "n/a", -1, -1);	
 }
 //row and column should start at 0
 Ttoken filter(FILE* fName, char* c, int* row, int* col){
@@ -111,10 +111,10 @@ Ttoken filter(FILE* fName, char* c, int* row, int* col){
 			return tokenSetter(token->tokenID, token->tokenInstance, token->row, token->column);
 		}
 		else{
-			return tokenSetter(-2, NULL, -1, -1);	
+			return tokenSetter(-2, "n/a", -1, -1);	
 		}		
 	}
-	return tokenSetter(-2, NULL, -1, -1);	
+	return tokenSetter(-2, "n/a", -1, -1);	
 }
 void testScanner(FILE* fName){
 	int *col = malloc(sizeof(int));

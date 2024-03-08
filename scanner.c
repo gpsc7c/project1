@@ -4,6 +4,7 @@
 #include <string.h>
 #include "ttoken.h"
 #include "scanner.h"
+//standard help function
 void help(){
 	fprintf(stdout, "This program exists as a scanner to find tokens for\n"
 			"a programming language and output them to a file.\n"

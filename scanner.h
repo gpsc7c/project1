@@ -6,14 +6,15 @@
 #include <limits.h>
 #include "ttoken.h"
 #include "langscan.h"
-#define MAX_LENGTH 8
-#define ERROROUT -1
+#define MAX_LENGTH 8//max length of token definition
 #ifndef SCANL_H
 #define SCANL_H
+//prints error based on error code and where error is
 void printErr(int err, int row, int column){
 	int errNo = 0 - err;
 	fprintf(stderr,"ERROR: scanner.h: FSADriver: %s on row %d at character %d.\n", errorTexts[errNo], row, column);
 }
+////sets each part of a token, uses incrementor to set token string
 Ttoken tokenSetter(int tkID, char* tkStr, int tkRow, int tkCol){
 	Ttoken token;
 	token.tokenID = tkID;
@@ -28,12 +29,14 @@ Ttoken tokenSetter(int tkID, char* tkStr, int tkRow, int tkCol){
 	token.column = tkCol;
 	return token;
 }
+
+//FSADriver to generate tokens
 Ttoken FSADriver(FILE* fName, char* nextChar, int row, int* col){//Arg exists for making col int a ptr
 	int column = *col;  //saves the position of the first character in line
 	state_t state = s1; //0 = state1 here
 	state_t nextState;  //lookahead
 	char tokString[9] = {'\0','\0','\0','\0','\0','\0','\0','\0','\0'};
-//string not malloc'd because it was behaving poorly when being passed back
+	//string not malloc'd because it was behaving poorly when being passed back
 
 	//while token incomplete
 	while(state != FINAL){
@@ -81,18 +84,24 @@ Ttoken FSADriver(FILE* fName, char* nextChar, int row, int* col){//Arg exists fo
 	//errorstate
 	return tokenSetter(-2, "n/a", -1, -1);	
 }
-//row and column should start at 0
-Ttoken filter(FILE* fName, char* c, int* row, int* col){
+//filter to remove whitespace and filter comments once identified
+Ttoken filter(FILE* fName, char* c, int* row, int* col){//row and column should start at 1 and 0, respectively
+	//creates a token pointer
 	Ttoken* token = malloc(sizeof(Ttoken));
+	//sets token ID to unused number
 	token->tokenID = -3;
+	//get first character
 	if(*row == 1 && *col == 0){
 		c[0] = fgetc(fName);
 		*col = *col + 1;
 	}
+	//repeat until a token is generated or EOF is hit
 	while (c[0] != EOF) {
+		//enter if not space
 		if(!isspace(c[0])){
 			*token = FSADriver(fName, c, *row, col);
 		}
+		//increment row if end of line reached, ensure no int overflow
 		if(c[0] == '\n'){
 			if(*row == INT_MAX){
 				fprintf(stderr, "ERROR: scanner.h: Filter: File too long (row count)");
@@ -101,6 +110,7 @@ Ttoken filter(FILE* fName, char* c, int* row, int* col){
 			*row = *row + 1;
 			*col = 1;
 		}
+		//skip spaces
 		if(isspace(c[0])){
 			c[0] = fgetc(fName);
 		}
@@ -110,28 +120,35 @@ Ttoken filter(FILE* fName, char* c, int* row, int* col){
 				c[0] = fgetc(fName);
 			}
 		}
-		//increment row if end of line reached
+		//if token successfully retrieved
 		if(token->tokenID >= 0){
 			return tokenSetter(token->tokenID, token->tokenInstance, token->row, token->column);
 		}
+		//whitespace state
 		else{
 			return tokenSetter(-2, "n/a", -1, -1);	
 		}		
 	}
+	//Generate EOF token
 	if (c[0] == EOF){
 		*token = FSADriver(fName, c, *row, col);	
 		return tokenSetter(token->tokenID, token->tokenInstance, token->row, token->column);
 	}
+	//Error state
 	return tokenSetter(-2, "n/a", -1, -1);	
 }
+
+//tests the scanner
 void testScanner(FILE* fName){
+	//create malloc'd variables to send to other functions
 	int *col = malloc(sizeof(int));
 	int *row = malloc(sizeof(int));
 	Ttoken *token = malloc(sizeof(Ttoken));
 	*col = 0;
 	*row = 1;
-	char c[2] = {'\0','\0'};				//iterator
-	while(token->tokenID != EOFTK){
+	char c[2] = {'\0','\0'};				//character iterator
+	//until EOF is reached
+	while(token->tokenID != EOFTK){//create output
 		*token = filter(fName, c, row, col);
 		if(token->tokenID >= 0 ){
 			fprintf(stdout, "%s,   %s,   row %d,  character %d.\n",tokenNames[token->tokenID], token->tokenInstance, token->row,token->column);

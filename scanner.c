@@ -20,10 +20,6 @@ int argHandler(int argc, char** argv, char** fName){
 		fprintf(stderr, "Too many arguments");
 		return 1;
 	}
-	if(argc < 2){
-		fprintf(stderr, "Need a file entry.");
-		return 1;
-	}
 	while((option = getopt(argc, argv, "h"))!= -1){//standard -h case
 		switch(option){
 			case 'h': return 1;
